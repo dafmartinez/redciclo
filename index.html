@@ -583,7 +583,7 @@
      JAVASCRIPT
 ══════════════════════════════════════════════════════════════════ -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN2GqM=" crossorigin=""></script>
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 'use strict';
 
@@ -1738,7 +1738,7 @@ async function abrirModalTracking(ordenId) {
 
   let puntos;
   try {
-    const res = await apiRequest({ metodo: 'obtenerRuta', orden: ordenId });
+    const res = await api({ metodo: 'obtenerRuta', orden: ordenId });
     puntos = res.data ?? [];
   } catch (err) {
     cerrarModalTracking();
