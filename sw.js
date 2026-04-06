@@ -10,7 +10,7 @@
 
 'use strict';
 
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const SHELL_CACHE   = `redciclo-shell-${CACHE_VERSION}`;
 const CDN_CACHE     = `redciclo-cdn-${CACHE_VERSION}`;
 
