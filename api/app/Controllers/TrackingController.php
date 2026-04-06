@@ -46,4 +46,20 @@ final class TrackingController extends Controller
 
         $this->ok(null, 'Ubicacion registrada');
     }
+
+    public function obtenerRuta(): never
+    {
+        $this->requireSession();
+        $data    = $this->requireField('orden');
+        $ordenId = (int)$data['orden'];
+
+        if ($ordenId <= 0) {
+            $this->fail('ID de orden no valido.');
+        }
+
+        $model = new Tracking(Database::getConnection());
+        $puntos = $model->obtenerRutaPorOrden($ordenId);
+
+        $this->ok($puntos);
+    }
 }

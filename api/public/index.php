@@ -89,6 +89,7 @@ $router->post('cancelar', static fn () => (new OrdenController())->cancelar());
 $router->post('configuracion',   static fn () => (new ConfigController())->configuracion());
 $router->post('subirEvidencia',  static fn () => (new OrdenController())->subirEvidencia());
 $router->post('guardarTracking', static fn () => (new TrackingController())->guardar());
+$router->post('obtenerRuta',    static fn () => (new TrackingController())->obtenerRuta());
 
 try {
     $router->dispatch((string)$metodo);

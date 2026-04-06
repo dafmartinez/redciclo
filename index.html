@@ -20,6 +20,9 @@
   <!-- ── Favicon ────────────────────────────────────────────────────── -->
   <link rel="icon" type="image/jpeg" href="icon/Logo-Redciclo.jpg" />
   <title>Redciclo — Gestión de Reciclaje</title>
+  <!-- ── Leaflet (mapas) ──────────────────────────────────────────────── -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -531,8 +534,56 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════
+     MODAL: TRACKING (MAPA DE RUTA)
+══════════════════════════════════════════════════════════════════ -->
+<div id="modal-tracking" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4"
+     role="dialog" aria-modal="true" aria-labelledby="tracking-title">
+
+  <div id="tracking-overlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl ring-1 ring-black/10 dark:ring-white/10
+              w-full max-w-2xl p-6 space-y-4 animate-fade-in">
+
+    <div class="flex items-start justify-between">
+      <div>
+        <h2 id="tracking-title" class="text-lg font-bold">Ruta del Transportista</h2>
+        <p id="tracking-subtitle" class="text-xs text-gray-400 mt-0.5">Orden #—</p>
+      </div>
+      <button id="btn-tracking-cerrar"
+        class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="tracking-spinner" class="flex justify-center py-8 text-gray-400">
+      <svg class="animate-spin w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/>
+      </svg>
+    </div>
+
+    <div id="tracking-empty" class="hidden text-center py-8 text-sm text-gray-400">
+      Sin puntos GPS registrados para esta orden aún.
+    </div>
+
+    <div id="mapa-tracking" class="hidden rounded-xl overflow-hidden ring-1 ring-black/10 dark:ring-white/10"
+         style="height: 400px;"></div>
+
+    <div id="tracking-info" class="hidden flex gap-4 text-xs text-gray-500 dark:text-gray-400">
+      <span id="tracking-puntos"></span>
+      <span id="tracking-inicio"></span>
+      <span id="tracking-ultimo"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
      JAVASCRIPT
 ══════════════════════════════════════════════════════════════════ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN2GqM=" crossorigin=""></script>
 <script>
 'use strict';
 
@@ -1058,6 +1109,18 @@ function renderAccionesOrden(o) {
 
   if (perfil === 'transportista' && estadoId === 7 && esTransportistaAsignado) {
     parts.push(renderBotonesTransportista(o.id, 8, 'Entregar al aprovechador'));
+  }
+
+  // Botón "Ver Ruta": visible cuando ya hay transportista en ruta (estado >= 5)
+  if (estadoId >= 5 && estadoId !== 10) {
+    parts.push(`<button onclick="abrirModalTracking(${o.id})" title="Ver ruta GPS"
+      class="text-xs px-2 py-1 rounded-lg border border-teal-400 dark:border-teal-500
+             text-teal-700 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors flex items-center gap-1">
+      <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+      </svg>
+      Ver Ruta
+    </button>`);
   }
 
   parts.push(notasBtn(o.id));
@@ -1641,6 +1704,108 @@ window.addEventListener('unhandledrejection', (event) => {
   toast(`Error inesperado: ${msg}`, 'error');
   event.preventDefault(); // evita que el navegador muestre el error en rojo
 });
+
+// ─── TRACKING MAP ─────────────────────────────────────────────────────────────
+let _trackingMap = null; // instancia Leaflet activa
+
+function cerrarModalTracking() {
+  document.getElementById('modal-tracking').classList.add('hidden');
+  if (_trackingMap) {
+    _trackingMap.remove();
+    _trackingMap = null;
+  }
+  // Resetear estado visual para la próxima apertura
+  document.getElementById('mapa-tracking').classList.add('hidden');
+  document.getElementById('tracking-empty').classList.add('hidden');
+  document.getElementById('tracking-info').classList.add('hidden');
+  document.getElementById('tracking-spinner').classList.remove('hidden');
+}
+
+async function abrirModalTracking(ordenId) {
+  const modal = document.getElementById('modal-tracking');
+  modal.classList.remove('hidden');
+  document.getElementById('tracking-subtitle').textContent = `Orden #${ordenId}`;
+
+  // Destruir mapa anterior si existe (previene "container already initialized")
+  if (_trackingMap) {
+    _trackingMap.remove();
+    _trackingMap = null;
+  }
+  document.getElementById('mapa-tracking').classList.add('hidden');
+  document.getElementById('tracking-empty').classList.add('hidden');
+  document.getElementById('tracking-info').classList.add('hidden');
+  document.getElementById('tracking-spinner').classList.remove('hidden');
+
+  let puntos;
+  try {
+    const res = await apiRequest({ metodo: 'obtenerRuta', orden: ordenId });
+    puntos = res.data ?? [];
+  } catch (err) {
+    cerrarModalTracking();
+    toast('No se pudo cargar la ruta: ' + (err.message ?? err), 'error');
+    return;
+  }
+
+  document.getElementById('tracking-spinner').classList.add('hidden');
+
+  if (!puntos.length) {
+    document.getElementById('tracking-empty').classList.remove('hidden');
+    return;
+  }
+
+  document.getElementById('mapa-tracking').classList.remove('hidden');
+
+  // Asegurar que el div tenga dimensiones antes de init (Leaflet lo necesita)
+  await new Promise(r => requestAnimationFrame(r));
+
+  const coords = puntos.map(p => [parseFloat(p.latitud), parseFloat(p.longitud)]);
+
+  _trackingMap = L.map('mapa-tracking');
+
+  // Capa base OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+  }).addTo(_trackingMap);
+
+  // Línea de recorrido
+  const polyline = L.polyline(coords, { color: '#16a34a', weight: 4, opacity: 0.85 }).addTo(_trackingMap);
+
+  // Marcador de inicio (azul)
+  const iconoInicio = L.divIcon({
+    className: '',
+    html: '<div style="background:#2563eb;width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+  });
+  L.marker(coords[0], { icon: iconoInicio }).addTo(_trackingMap)
+    .bindPopup(`<b>Inicio</b><br>${puntos[0].ftrack}`);
+
+  // Marcador final (verde, más grande)
+  const iconoFin = L.divIcon({
+    className: '',
+    html: '<div style="background:#16a34a;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>',
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+  const ultimo = puntos[puntos.length - 1];
+  L.marker(coords[coords.length - 1], { icon: iconoFin }).addTo(_trackingMap)
+    .bindPopup(`<b>Última posición</b><br>${ultimo.ftrack}`)
+    .openPopup();
+
+  // Ajustar zoom para mostrar toda la ruta
+  _trackingMap.fitBounds(polyline.getBounds(), { padding: [24, 24] });
+
+  // Info bajo el mapa
+  const infoEl = document.getElementById('tracking-info');
+  document.getElementById('tracking-puntos').textContent = `${puntos.length} punto(s) GPS`;
+  document.getElementById('tracking-inicio').textContent = `Inicio: ${puntos[0].ftrack}`;
+  document.getElementById('tracking-ultimo').textContent = `Último: ${ultimo.ftrack}`;
+  infoEl.classList.remove('hidden');
+}
+
+document.getElementById('btn-tracking-cerrar').addEventListener('click', cerrarModalTracking);
+document.getElementById('tracking-overlay').addEventListener('click', cerrarModalTracking);
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 showLogin();

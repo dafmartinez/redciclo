@@ -15,6 +15,18 @@ final class Tracking
         $this->db = $db;
     }
 
+    public function obtenerRutaPorOrden(int $ordenId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT latitud, longitud, ftrack
+             FROM tracking
+             WHERE orden = :orden
+             ORDER BY ftrack ASC'
+        );
+        $stmt->execute([':orden' => $ordenId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function guardar(int $ordenId, int $transportistaId, float $latitud, float $longitud): bool
     {
         $sql = 'INSERT INTO tracking (orden, usuario, latitud, longitud, ftrack)
