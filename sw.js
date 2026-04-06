@@ -10,7 +10,7 @@
 
 'use strict';
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const SHELL_CACHE   = `redciclo-shell-${CACHE_VERSION}`;
 const CDN_CACHE     = `redciclo-cdn-${CACHE_VERSION}`;
 
@@ -20,6 +20,11 @@ const PRECACHE_ASSETS = [
   './index.html',
   './manifest.json',
   './icon/Logo-Redciclo.jpg',
+  './icon/favicon.svg',
+  './icon/favicon-32.png',
+  './icon/favicon-16.png',
+  './icon/apple-touch-icon.png',
+  './icon/favicon.ico',
 ];
 
 // Recursos que intentamos cachear en la instalación pero no son críticos.
@@ -27,6 +32,19 @@ const PRECACHE_ASSETS = [
 const OPTIONAL_ASSETS = [
   './icon/icon-192.png',
   './icon/icon-512.png',
+  './icon/ui-user.svg',
+  './icon/ui-lock.svg',
+  './icon/ui-alert.svg',
+  './icon/ui-download.svg',
+  './icon/ui-moon.svg',
+  './icon/ui-sun.svg',
+  './icon/ui-logout.svg',
+  './icon/ui-plus.svg',
+  './icon/ui-reload.svg',
+  './icon/ui-close.svg',
+  './icon/ui-chat.svg',
+  './icon/ui-location.svg',
+  './icon/ui-camera.svg',
 ];
 
 // Orígenes de CDN que manejamos con Stale-While-Revalidate
