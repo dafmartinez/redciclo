@@ -197,11 +197,12 @@ final class Orden
             'UPDATE ordenes
              SET estado = :cancelado
              WHERE id = :orden
-               AND estado <> :cancelado'
+               AND estado <> :cancelado2'
         );
         $stmt->execute([
-            ':cancelado' => $canceladoId,
-            ':orden' => $ordenId,
+            ':cancelado'  => $canceladoId,
+            ':cancelado2' => $canceladoId,
+            ':orden'      => $ordenId,
         ]);
 
         return $stmt->rowCount() > 0;
