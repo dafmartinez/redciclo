@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find \"/c/Users/ASUS/Documents/public_html \\(1\\)\" -maxdepth 2 -type d)",
+      "Bash(find \"/c/Users/ASUS/Documents/public_html \\(1\\)/api\" -type f)",
+      "Bash(find \"c:/Users/ASUS/Documents/public_html \\(1\\)\" -type f)",
+      "Bash(wc -l \"c:/Users/ASUS/Documents/public_html \\(1\\)/index.html\")"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat \"c:/Users/ASUS/Documents/public_html \\(1\\)/manifest.json\")",
+      "Bash(python -c \"import sys,json; json.load\\(sys.stdin\\); print\\(''''JSON válido''''\\)\")",
+      "Bash(wc -l \"c:/Users/ASUS/Documents/public_html \\(1\\)/sw.js\")",
+      "Bash(sed -n '1,38p' \"c:/Users/ASUS/Documents/public_html \\(1\\)/index.html\")"
+    ]
+  }
+}

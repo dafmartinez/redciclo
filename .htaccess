@@ -1,0 +1,39 @@
+# ── PWA: MIME types y headers requeridos por los navegadores ─────────────────
+
+# manifest.json debe servirse como application/manifest+json
+<Files "manifest.json">
+    Header set Content-Type "application/manifest+json; charset=utf-8"
+</Files>
+
+# Service Worker debe servirse como JS y sin caché del browser
+# (el navegador siempre debe verificar si sw.js cambió)
+<Files "sw.js">
+    Header set Content-Type "application/javascript; charset=utf-8"
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Service-Worker-Allowed "/"
+</Files>
+
+# ── Seguridad básica ──────────────────────────────────────────────────────────
+
+# Bloquear acceso directo a la config de BD
+<Files "db_config.php">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Bloquear listado de directorios
+Options -Indexes
+
+# Bloquear acceso a archivos sensibles
+<FilesMatch "\.(bak|sql|log|env|ini|sh|bat)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Headers de seguridad
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

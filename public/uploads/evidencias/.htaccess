@@ -1,0 +1,10 @@
+# Bloquear ejecución de scripts en el directorio de subidas.
+# Solo permitir lectura de imágenes; cualquier otro acceso es denegado.
+
+Options -ExecCGI -Indexes
+RemoveHandler .php .php3 .php4 .php5 .php7 .php8 .phtml .phar
+RemoveType    .php .php3 .php4 .php5 .php7 .php8 .phtml .phar
+
+<FilesMatch "\.(?!jpe?g$|png$|webp$)[^.]+$">
+    Require all denied
+</FilesMatch>

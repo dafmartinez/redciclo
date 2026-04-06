@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#16a34a" />
+  <link rel="icon" type="image/jpeg" href="../icon/Logo-Redciclo.jpg" />
+  <title>Redciclo — Gestión de Reciclaje</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: { brand: { DEFAULT: '#16a34a', dark: '#15803d' } },
+          animation: { 'fade-in': 'fadeIn .2s ease-out' },
+          keyframes: { fadeIn: { from: { opacity: 0, transform: 'translateY(-6px)' }, to: { opacity: 1 } } },
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full bg-slate-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100 transition-colors duration-200">
+
+  <!--
+    El contenido HTML completo (modales, tabla, navbar, etc.) se mantiene
+    idéntico al de /index.html raíz. Solo cambia cómo se carga el JS:
+    en lugar de scripts inline globales, importamos los módulos ES6.
+
+    INSTRUCCIÓN DE MIGRACIÓN:
+    Copia aquí todo el <body> de /index.html (sin sus <script> inline),
+    luego reemplaza el bloque <script> final por el import-module de abajo.
+    Los data-action en los botones (ya implementados en tablaOrdenes.js)
+    reemplazan los onclick="fn()" del HTML original.
+  -->
+
+  <div id="toast-container"
+    class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none">
+  </div>
+
+  <!-- El resto del HTML (view-login, view-dashboard, modales) va aquí.
+       Consulta /index.html como referencia de la estructura. -->
+
+  <script type="module">
+    import { initDashboard } from './js/dashboard.js';
+    initDashboard().catch(console.error);
+  </script>
+</body>
+</html>

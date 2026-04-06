@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ── PWA core ───────────────────────────────────────────────────── -->
+  <link rel="manifest" href="manifest.json" />
+  <!-- Controla el color de la barra de estado en Android Chrome -->
+  <meta name="theme-color" content="#16a34a" />
+  <!-- Permite que Safari la instale como app en iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Redciclo" />
+  <!-- Icono para iOS (Apple Touch Icon — se muestra al guardar en pantalla de inicio) -->
+  <link rel="apple-touch-icon" href="icon/icon-192.png" />
+  <!-- Splash screens mínimo para iOS (usa el color de fondo del manifest) -->
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- ── Favicon ────────────────────────────────────────────────────── -->
+  <link rel="icon" type="image/jpeg" href="icon/Logo-Redciclo.jpg" />
+  <title>Redciclo — Gestión de Reciclaje</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: { brand: { DEFAULT: '#16a34a', dark: '#15803d' } },
+          animation: { 'fade-in': 'fadeIn .2s ease-out' },
+          keyframes: { fadeIn: { from: { opacity: 0, transform: 'translateY(-6px)' }, to: { opacity: 1 } } },
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="h-full bg-slate-100 dark:bg-gray-950 text-gray-800 dark:text-gray-100 transition-colors duration-200">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     TOAST CONTAINER
+══════════════════════════════════════════════════════════════════ -->
+<div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     VISTA: LOGIN
+══════════════════════════════════════════════════════════════════ -->
+<div id="view-login" class="min-h-screen flex items-center justify-center px-4">
+  <div class="w-full max-w-sm">
+
+    <!-- Card -->
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-8 space-y-6">
+      <!-- Logo (se oculta al mostrar el registro) -->
+      <div id="login-logo" class="text-center space-y-1">
+        <div class="mx-auto w-28 h-16 flex items-center justify-center mb-1">
+          <img src="icon/Logo-Redciclo.jpg" alt="Logo Redciclo"
+            class="max-w-full max-h-full object-contain drop-shadow-sm" />
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight text-green-700 dark:text-green-400">Redciclo</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Plataforma de gestión de reciclaje</p>
+      </div>
+
+      <!-- Form -->
+      <form id="form-login" class="space-y-4" novalidate>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" for="inp-login">Usuario</label>
+          <div class="relative">
+            <!-- Heroicon: user -->
+            <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+            </svg>
+            <input id="inp-login" type="text" autocomplete="username" placeholder="Tu nombre de usuario"
+              class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition pl-9" required />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1.5" for="inp-pass">Contraseña</label>
+          <div class="relative">
+            <!-- Heroicon: lock-closed -->
+            <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"/>
+            </svg>
+            <input id="inp-pass" type="password" autocomplete="current-password" placeholder="••••••••"
+              class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition pl-9" required />
+          </div>
+        </div>
+
+        <!-- Error inline -->
+        <div id="login-error" class="hidden flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+          <svg class="w-4 h-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/>
+          </svg>
+          <span id="login-error-text"></span>
+        </div>
+
+        <button type="submit" id="btn-login"
+          class="w-full py-2.5 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold
+                 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400
+                 flex items-center justify-center gap-2">
+          <span id="btn-login-text">Ingresar</span>
+          <!-- Spinner (oculto por defecto) -->
+          <svg id="btn-login-spinner" class="hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+        </button>
+      </form>
+
+      <div class="pt-2 border-t border-gray-100 dark:border-gray-800">
+        <button id="btn-show-register" type="button"
+          class="w-full text-sm text-green-700 dark:text-green-400 font-medium hover:underline">
+          Crear cuenta nueva
+        </button>
+      </div>
+
+      <form id="form-register" class="hidden space-y-4" novalidate>
+        <div class="text-center pb-1">
+          <h2 class="text-lg font-bold text-gray-700 dark:text-gray-200">Crear cuenta</h2>
+          <p class="text-xs text-gray-400">Completa los campos para registrarte</p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1.5" for="inp-register-login">Usuario</label>
+          <input id="inp-register-login" type="text" autocomplete="username" placeholder="Mínimo 3 caracteres"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1.5" for="inp-register-pass">Contraseña</label>
+          <input id="inp-register-pass" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1.5" for="inp-register-pass-confirm">Confirmar contraseña</label>
+          <input id="inp-register-pass-confirm" type="password" autocomplete="new-password" placeholder="Repite la contraseña"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1.5" for="inp-register-perfil">Perfil</label>
+          <select id="inp-register-perfil"
+            class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition" required>
+            <option value="cliente">Cliente</option>
+            <option value="transportista">Transportista</option>
+            <option value="aprovechador">Aprovechador</option>
+          </select>
+        </div>
+
+        <div id="register-error" class="hidden flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+          <svg class="w-4 h-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/>
+          </svg>
+          <span id="register-error-text"></span>
+        </div>
+
+        <div class="flex gap-2">
+          <button type="submit" id="btn-register"
+            class="flex-1 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors">
+            Registrarme
+          </button>
+          <button type="button" id="btn-cancel-register"
+            class="px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Version -->
+    <p class="text-center text-xs text-gray-400 mt-4">Redciclo v2 · PHP 8 + PDO</p>
+
+    <!-- Botón de instalación PWA (se muestra solo cuando el navegador lo soporta) -->
+    <div id="pwa-install-wrap" class="hidden mt-3">
+      <button id="btn-pwa-install"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
+               border-2 border-green-600 text-green-700 dark:border-green-500 dark:text-green-400
+               hover:bg-green-50 dark:hover:bg-green-900/20 active:bg-green-100
+               font-semibold text-sm transition-colors">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+        </svg>
+        Instalar app en este dispositivo
+      </button>
+      <p class="text-center text-xs text-gray-400 mt-1.5">
+        Funciona sin conexión · Sin descargar de la tienda
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     VISTA: DASHBOARD
+══════════════════════════════════════════════════════════════════ -->
+<div id="view-dashboard" class="hidden min-h-screen flex flex-col">
+
+  <!-- ── Navbar ────────────────────────────────────────────────── -->
+  <nav class="sticky top-0 z-30 bg-green-700 dark:bg-green-900 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+
+      <!-- Brand -->
+      <div class="flex items-center gap-2 font-bold text-lg shrink-0">
+        <div class="w-12 h-8 flex items-center justify-center rounded-lg bg-white/10 px-1">
+          <img src="icon/Logo-Redciclo.jpg" alt="Logo Redciclo"
+            class="max-w-full max-h-full object-contain" />
+        </div>
+        <span>Redciclo</span>
+      </div>
+
+      <!-- User info + actions -->
+      <div class="flex items-center gap-2 min-w-0">
+        <!-- Badge de perfil -->
+        <span id="nav-perfil-badge"
+          class="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white/20">
+        </span>
+        <span id="nav-user-name" class="text-sm truncate max-w-[120px] opacity-90"></span>
+
+        <!-- Dark mode -->
+        <button id="btn-dark" title="Cambiar tema"
+          class="p-1.5 rounded-lg hover:bg-white/20 transition-colors">
+          <svg id="icon-moon" class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"/>
+          </svg>
+          <svg id="icon-sun" class="hidden w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/>
+          </svg>
+        </button>
+
+        <!-- Logout -->
+        <button id="btn-logout"
+          class="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 transition-colors">
+          <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"/>
+          </svg>
+          Salir
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Main content ──────────────────────────────────────────── -->
+  <main class="flex-1 p-4 sm:p-6 max-w-7xl mx-auto w-full space-y-5">
+
+    <!-- Toolbar -->
+    <div class="flex flex-wrap items-center gap-3">
+
+      <!-- Nueva Orden -->
+      <button id="btn-nueva-orden"
+        class="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 text-sm shadow-sm w-full sm:w-auto">
+        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        Nueva Solicitud
+      </button>
+
+      <!-- Filtro por estado -->
+      <div class="flex items-center gap-2 w-full sm:w-auto">
+        <label class="text-sm text-gray-500 dark:text-gray-400 shrink-0">Estado:</label>
+        <select id="filtro-estado"
+          class="flex-1 sm:flex-none rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800
+                 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition">
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <!-- Actualizar -->
+      <button id="btn-reload"
+        class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm flex items-center justify-center gap-1.5 w-full sm:w-auto">
+        <svg id="icon-reload" class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+        </svg>
+        Actualizar
+      </button>
+
+      <!-- Contador -->
+      <span id="ordenes-count" class="w-full sm:w-auto sm:ml-auto text-sm text-gray-400 dark:text-gray-500 text-right"></span>
+    </div>
+
+    <!-- Tarjetas (móvil) -->
+    <div id="cards-ordenes" class="sm:hidden space-y-3">
+      <div class="flex flex-col items-center gap-2 text-gray-400 py-12">
+        <svg class="animate-spin w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        <span class="text-sm">Cargando…</span>
+      </div>
+    </div>
+
+    <!-- Tabla (escritorio) -->
+    <div class="hidden sm:block bg-white dark:bg-gray-900 rounded-2xl shadow ring-1 ring-black/5 dark:ring-white/10 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <tr class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              <th class="px-4 py-3 text-left font-semibold">#</th>
+              <th class="px-4 py-3 text-left font-semibold">Creada</th>
+              <th class="px-4 py-3 text-left font-semibold">Programada</th>
+              <th class="px-4 py-3 text-left font-semibold">Categoría</th>
+              <th class="px-4 py-3 text-left font-semibold">Material</th>
+              <th class="px-4 py-3 text-right font-semibold">Cantidad</th>
+              <th class="px-4 py-3 text-left font-semibold">Medida</th>
+              <th class="px-4 py-3 text-left font-semibold">Estado</th>
+              <th class="px-4 py-3 text-center font-semibold">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-ordenes" class="divide-y divide-gray-100 dark:divide-gray-800">
+            <tr>
+              <td colspan="9" class="text-center py-12">
+                <div class="flex flex-col items-center gap-2 text-gray-400">
+                  <svg class="animate-spin w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  <span class="text-sm">Cargando órdenes…</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL: NUEVA ORDEN
+══════════════════════════════════════════════════════════════════ -->
+<div id="modal-orden" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4"
+     role="dialog" aria-modal="true" aria-labelledby="modal-title">
+
+  <!-- Overlay -->
+  <div id="modal-overlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <!-- Panel -->
+  <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl ring-1 ring-black/10 dark:ring-white/10
+              w-full max-w-md p-6 space-y-5 animate-fade-in">
+
+    <!-- Header -->
+    <div class="flex items-start justify-between">
+      <div>
+        <h2 id="modal-title" class="text-lg font-bold">Nueva Solicitud</h2>
+        <p class="text-xs text-gray-400 mt-0.5">Completa los datos de la nueva orden</p>
+      </div>
+      <button id="btn-cerrar-modal" class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form id="form-orden" class="space-y-4" novalidate>
+
+      <!-- Fecha programada -->
+      <div>
+        <label class="block text-sm font-medium mb-1.5" for="ord-fecha">Fecha Programada</label>
+        <input type="date" id="ord-fecha" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+      </div>
+
+      <!-- Categoría + Material -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium mb-1.5" for="ord-categoria">Categoría</label>
+          <select id="ord-categoria" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition">
+            <option value="">Seleccionar…</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" for="ord-material">Material</label>
+          <select id="ord-material" required disabled class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition disabled:opacity-50 disabled:cursor-not-allowed">
+            <option value="">— Elige categoría —</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Cantidad + Medida -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium mb-1.5" for="ord-cantidad">Cantidad</label>
+          <input type="number" id="ord-cantidad" min="0.01" step="0.01" placeholder="0.00" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1.5" for="ord-medida">Medida</label>
+          <select id="ord-medida" required class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 transition">
+            <option value="">Seleccionar…</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Error del form -->
+      <div id="orden-error" class="hidden flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+        <svg class="w-4 h-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/>
+        </svg>
+        <span id="orden-error-text"></span>
+      </div>
+
+      <!-- Acciones -->
+      <div class="flex gap-3 justify-end pt-1">
+        <button type="button" id="btn-cancelar-orden" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm">Cancelar</button>
+        <button type="submit" id="btn-submit-orden" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 text-sm flex items-center gap-2">
+          <span>Crear Solicitud</span>
+          <svg id="spinner-orden" class="hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL: NOTAS
+══════════════════════════════════════════════════════════════════ -->
+<div id="modal-notas" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4"
+     role="dialog" aria-modal="true" aria-labelledby="notas-title">
+
+  <div id="notas-overlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl ring-1 ring-black/10 dark:ring-white/10
+              w-full max-w-md p-6 flex flex-col gap-4 animate-fade-in max-h-[90vh]">
+
+    <!-- Header -->
+    <div class="flex items-start justify-between shrink-0">
+      <div>
+        <h2 id="notas-title" class="text-lg font-bold">Notas de la orden</h2>
+        <p id="notas-orden-id" class="text-xs text-gray-400 mt-0.5"></p>
+      </div>
+      <button id="btn-notas-cerrar"
+        class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Lista de notas (scrollable) -->
+    <div id="notas-lista"
+      class="flex-1 overflow-y-auto space-y-2 min-h-0 pr-1">
+      <p class="text-sm text-gray-400 text-center py-6">Cargando notas…</p>
+    </div>
+
+    <!-- Agregar nota -->
+    <div class="shrink-0 space-y-2 border-t border-gray-100 dark:border-gray-800 pt-3">
+      <textarea id="nota-texto" rows="3" placeholder="Escribe una nota…"
+        class="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700
+               px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition resize-none"></textarea>
+      <button id="btn-nota-enviar" type="button"
+        class="w-full py-2 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800
+               text-white text-sm font-semibold transition-colors
+               flex items-center justify-center gap-2
+               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400">
+        <span id="btn-nota-text">Agregar nota</span>
+        <svg id="spinner-nota" class="hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAL: EVIDENCIA (FOTO)
+══════════════════════════════════════════════════════════════════ -->
+<div id="modal-evidencia" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4"
+     role="dialog" aria-modal="true" aria-labelledby="evidencia-title">
+
+  <div id="evidencia-overlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+  <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl ring-1 ring-black/10 dark:ring-white/10
+              w-full max-w-sm p-6 space-y-4 animate-fade-in">
+
+    <div class="flex items-start justify-between">
+      <div>
+        <h2 id="evidencia-title" class="text-lg font-bold">Subir Evidencia</h2>
+        <p class="text-xs text-gray-400 mt-0.5">Toma o selecciona una foto antes de continuar</p>
+      </div>
+      <button id="btn-evidencia-cerrar"
+        class="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400">
+        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="space-y-3">
+      <label class="block text-sm font-medium" for="evidencia-input">Foto de evidencia</label>
+      <input id="evidencia-input" type="file" accept="image/*" capture="environment"
+        class="w-full text-sm text-gray-600 dark:text-gray-300
+               file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0
+               file:text-sm file:font-semibold
+               file:bg-green-50 file:text-green-700
+               dark:file:bg-green-900/30 dark:file:text-green-400
+               hover:file:bg-green-100 dark:hover:file:bg-green-900/50
+               cursor-pointer" />
+      <div id="evidencia-preview-wrap" class="hidden">
+        <img id="evidencia-preview"
+          class="w-full max-h-48 object-cover rounded-xl border border-gray-200 dark:border-gray-700"
+          alt="Vista previa" />
+      </div>
+    </div>
+
+    <div id="evidencia-error"
+      class="hidden text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+    </div>
+
+    <div class="flex gap-3 justify-end pt-1">
+      <button id="btn-evidencia-cancelar" type="button"
+        class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600
+               hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm">
+        Cancelar
+      </button>
+      <button id="btn-evidencia-subir" type="button"
+        class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 active:bg-green-800
+               text-white font-semibold transition-colors text-sm
+               flex items-center gap-2
+               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400">
+        <span id="btn-evidencia-text">Confirmar y Subir</span>
+        <svg id="spinner-evidencia" class="hidden animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+const API_URL = 'api/public/index.php';
+
+// ─── Estado de la app ────────────────────────────────────────────────────────
+let currentUser = null;
+let ordenesData = [];
+let appConfig   = { categorias: [], materiales: [], medidas: [], estados: [] };
+let appUsers    = [];
+
+// ─── Estado GPS y evidencias ─────────────────────────────────────────────────
+let evidenciaPendiente = null;   // { ordenId, estado }
+let gpsOrdenActiva     = null;   // id de la orden con rastreo activo
+let gpsIntervalId      = null;   // handle de setInterval
+const GPS_INTERVALO_MS = 3 * 60 * 1000; // enviar posición cada 3 minutos
+
+function usuarioActualEsTransportista() {
+  return normalizePerfil(currentUser?.perfil) === 'transportista';
+}
+
+// ─── API fetch helper ────────────────────────────────────────────────────────
+async function api(payload) {
+  const res = await fetch(API_URL, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(payload),
+    credentials: 'include',
+  });
+
+  let json = null;
+  try {
+    json = await res.json();
+  } catch (_) {
+    json = null;
+  }
+
+  if (!res.ok) {
+    throw new Error(json?.message || `Error HTTP ${res.status}`);
+  }
+
+  if (!json || json.status !== 'success') {
+    throw new Error(json.message || 'Error desconocido');
+  }
+  return json.data;
+}
+
+// ─── Toast notifications ─────────────────────────────────────────────────────
+function toast(message, type = 'success') {
+  const colors = {
+    success: 'bg-green-600 text-white',
+    error:   'bg-red-600 text-white',
+    info:    'bg-blue-600 text-white',
+  };
+  const icons = {
+    success: '✓',
+    error:   '✕',
+    info:    'ℹ',
+  };
+
+  const el = document.createElement('div');
+  el.className = `pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium
+                  ${colors[type] ?? colors.info} animate-fade-in transition-all`;
+  el.innerHTML = `<span>${icons[type] ?? ''}</span><span>${esc(message)}</span>`;
+
+  const container = document.getElementById('toast-container');
+  container.appendChild(el);
+
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(12px)';
+    setTimeout(() => el.remove(), 300);
+  }, 3500);
+}
+
+// ─── Cambio de vista ─────────────────────────────────────────────────────────
+function showLogin() {
+  document.getElementById('view-login').classList.remove('hidden');
+  document.getElementById('view-dashboard').classList.add('hidden');
+  document.getElementById('btn-nueva-orden').classList.add('hidden');
+  document.getElementById('form-login').classList.remove('hidden');
+  document.getElementById('form-register').classList.add('hidden');
+  document.getElementById('btn-show-register').classList.remove('hidden');
+  document.getElementById('inp-login').focus();
+}
+
+function showDashboard() {
+  document.getElementById('view-login').classList.add('hidden');
+  document.getElementById('view-dashboard').classList.remove('hidden');
+  syncUiForRole();
+}
+
+function normalizePerfil(perfil) {
+  const val = String(perfil ?? '').trim().toLowerCase();
+  if (val === 'cliente'       || val === 'clientes')                                        return 'cliente';
+  if (val === 'transportista' || val === 'transportistas' || val === 'conductor')           return 'transportista';
+  if (val === 'aprovechador'  || val === 'aprovechadores' || val === 'reciclador')          return 'aprovechador';
+  if (val === 'operador'      || val === 'operadores'     || val === 'admin'
+                              || val === 'administrador')                                   return 'operador';
+  return val;
+}
+
+function syncUiForRole() {
+  const perfil    = normalizePerfil(currentUser?.perfil);
+  const canCreate = perfil === 'cliente';
+  document.getElementById('btn-nueva-orden').classList.toggle('hidden', !canCreate);
+  // Mostrar perfil en el badge del navbar
+  const badge = document.getElementById('nav-perfil-badge');
+  badge.textContent = perfil;
+}
+
+// ─── Dark mode ───────────────────────────────────────────────────────────────
+function applyDark(on) {
+  document.documentElement.classList.toggle('dark', on);
+  document.getElementById('icon-moon').classList.toggle('hidden', on);
+  document.getElementById('icon-sun').classList.toggle('hidden', !on);
+}
+
+applyDark(localStorage.getItem('dark') === '1');
+
+document.getElementById('btn-dark').addEventListener('click', () => {
+  const on = !document.documentElement.classList.contains('dark');
+  applyDark(on);
+  localStorage.setItem('dark', on ? '1' : '0');
+});
+
+// ─── LOGIN ───────────────────────────────────────────────────────────────────
+document.getElementById('form-login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  detenerGPS(false);
+
+  const loginVal = document.getElementById('inp-login').value.trim();
+  const passVal  = document.getElementById('inp-pass').value;
+  const errEl    = document.getElementById('login-error');
+  const errText  = document.getElementById('login-error-text');
+  const btnText  = document.getElementById('btn-login-text');
+  const spinner  = document.getElementById('btn-login-spinner');
+
+  errEl.classList.add('hidden');
+  btnText.textContent = 'Verificando…';
+  spinner.classList.remove('hidden');
+  document.getElementById('btn-login').disabled = true;
+
+  try {
+    // 1. Login → obtiene sesión
+    const user = await api({ metodo: 'login', login: loginVal, password: passVal });
+
+    // 2. Verificar sesión activa con autorizar
+    await api({ metodo: 'autorizar' });
+
+    currentUser = { ...user, perfil: normalizePerfil(user.perfil) };
+    document.getElementById('nav-user-name').textContent   = user.login;
+    document.getElementById('nav-perfil-badge').textContent = currentUser.perfil;
+
+    showDashboard();
+
+    // Carga paralela de config + órdenes
+    await loadConfig();
+    await loadUsers();
+    await loadOrdenes();
+
+  } catch (err) {
+    errText.textContent = err.message;
+    errEl.classList.remove('hidden');
+    document.getElementById('inp-pass').value = '';
+    document.getElementById('inp-pass').focus();
+  } finally {
+    btnText.textContent = 'Ingresar';
+    spinner.classList.add('hidden');
+    document.getElementById('btn-login').disabled = false;
+  }
+});
+
+function showRegisterForm(show) {
+  document.getElementById('form-login').classList.toggle('hidden', show);
+  document.getElementById('form-register').classList.toggle('hidden', !show);
+  document.getElementById('btn-show-register').classList.toggle('hidden', show);
+  // Ocultar logo/branding al registrar para limpiar la vista
+  document.getElementById('login-logo').classList.toggle('hidden', show);
+  document.getElementById(show ? 'inp-register-login' : 'inp-login').focus();
+}
+
+document.getElementById('btn-show-register').addEventListener('click', () => showRegisterForm(true));
+document.getElementById('btn-cancel-register').addEventListener('click', () => showRegisterForm(false));
+
+document.getElementById('form-register').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const login    = document.getElementById('inp-register-login').value.trim();
+  const password = document.getElementById('inp-register-pass').value;
+  const confirm  = document.getElementById('inp-register-pass-confirm').value;
+  const perfil   = document.getElementById('inp-register-perfil').value;
+  const errEl    = document.getElementById('register-error');
+  const errText  = document.getElementById('register-error-text');
+  const btn      = document.getElementById('btn-register');
+
+  errEl.classList.add('hidden');
+
+  if (password !== confirm) {
+    errText.textContent = 'Las contraseñas no coinciden.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  btn.disabled = true;
+  try {
+    await api({ metodo: 'registro', login, password, perfil });
+    toast('Usuario registrado. Ya puedes iniciar sesión.', 'success');
+    document.getElementById('inp-login').value = login;
+    document.getElementById('inp-pass').value  = '';
+    document.getElementById('form-register').reset();
+    showRegisterForm(false);
+  } catch (err) {
+    errText.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ─── LOGOUT ──────────────────────────────────────────────────────────────────
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  detenerGPS(false);
+  try {
+    await api({ metodo: 'logout' });
+  } catch (_) { /* ignorar */ }
+  currentUser = null;
+  ordenesData  = [];
+  appConfig    = { categorias: [], materiales: [], medidas: [], estados: [] };
+  appUsers     = [];
+  document.getElementById('filtro-estado').innerHTML = '<option value="">Todos</option>';
+  showLogin();
+  toast('Sesión cerrada correctamente', 'info');
+});
+
+// ─── CONFIGURACIÓN ───────────────────────────────────────────────────────────
+async function loadConfig() {
+  const [categorias, materiales, medidas, estados] = await Promise.all([
+    api({ metodo: 'configuracion', grupo: 'categorias' }),
+    api({ metodo: 'configuracion', grupo: 'materiales' }),
+    api({ metodo: 'configuracion', grupo: 'medidas' }),
+    api({ metodo: 'configuracion', grupo: 'estados' }),
+  ]);
+
+  appConfig = { categorias, materiales, medidas, estados };
+
+  // Poblar filtro de estados en toolbar
+  const selFiltro = document.getElementById('filtro-estado');
+  selFiltro.innerHTML = '<option value="">Todos</option>';
+  estados.forEach(({ id, estado }) => {
+    selFiltro.appendChild(new Option(estado, id));
+  });
+
+  // Poblar modal: categorías y medidas
+  fillSelect('ord-categoria', categorias, 'id', 'categoria', 'Seleccionar categoría…');
+  fillSelect('ord-medida',    medidas,    'id', 'medida',    'Seleccionar medida…');
+}
+
+async function loadUsers() {
+  appUsers = await api({ metodo: 'usuarios' });
+}
+
+function fillSelect(elId, items, valKey, labelKey, placeholder = 'Seleccionar…') {
+  const sel = document.getElementById(elId);
+  sel.innerHTML = `<option value="">${placeholder}</option>`;
+  items.forEach(item => sel.appendChild(new Option(item[labelKey], item[valKey])));
+}
+
+// Al cambiar categoría → filtrar materiales
+document.getElementById('ord-categoria').addEventListener('change', function () {
+  const catId  = parseInt(this.value);
+  const matSel = document.getElementById('ord-material');
+
+  if (!catId) {
+    matSel.innerHTML = '<option value="">— Elige categoría primero —</option>';
+    matSel.disabled = true;
+    // Resetear medidas al estado completo
+    fillSelect('ord-medida', appConfig.medidas, 'id', 'medida', 'Seleccionar medida…');
+    return;
+  }
+
+  const filtered = appConfig.materiales.filter(m => parseInt(m.categoria) === catId);
+  fillSelect('ord-material', filtered, 'id', 'material', 'Seleccionar material…');
+  matSel.disabled = false;
+  // Resetear medida cuando cambia la categoría
+  fillSelect('ord-medida', appConfig.medidas, 'id', 'medida', 'Seleccionar medida…');
+});
+
+// Al cambiar material → filtrar medida automáticamente
+document.getElementById('ord-material').addEventListener('change', function () {
+  const matId = parseInt(this.value);
+  if (!matId) {
+    fillSelect('ord-medida', appConfig.medidas, 'id', 'medida', 'Seleccionar medida…');
+    return;
+  }
+
+  const mat     = appConfig.materiales.find(m => parseInt(m.id) === matId);
+  const medidaId = mat ? parseInt(mat.medida) : 0;
+
+  if (medidaId) {
+    const match = appConfig.medidas.filter(med => parseInt(med.id) === medidaId);
+    if (match.length) {
+      fillSelect('ord-medida', match, 'id', 'medida', 'Seleccionar medida…');
+      document.getElementById('ord-medida').value = String(medidaId); // auto-seleccionar
+      return;
+    }
+  }
+  // Si el material no tiene medida asociada, mostrar todas
+  fillSelect('ord-medida', appConfig.medidas, 'id', 'medida', 'Seleccionar medida…');
+});
+
+// ─── ÓRDENES ─────────────────────────────────────────────────────────────────
+function resetMedidasSelectAnidado() {
+  document.getElementById('ord-medida').innerHTML = '<option value="">Seleccione una medida...</option>';
+}
+
+function syncMaterialesPorCategoria() {
+  const catId = parseInt(document.getElementById('ord-categoria').value);
+  const matSel = document.getElementById('ord-material');
+
+  if (!catId) {
+    matSel.innerHTML = '<option value="">— Elige categoría primero —</option>';
+    matSel.disabled = true;
+    resetMedidasSelectAnidado();
+    return;
+  }
+
+  const filtered = appConfig.materiales.filter(m => parseInt(m.id_categoria) === catId);
+  fillSelect('ord-material', filtered, 'nombre_material', 'nombre_material', 'Seleccionar material...');
+  matSel.disabled = false;
+  resetMedidasSelectAnidado();
+}
+
+function syncMedidasPorMaterial() {
+  const nombreMaterial = String(document.getElementById('ord-material').value || '').trim();
+  const categoriaId = parseInt(document.getElementById('ord-categoria').value);
+
+  if (!nombreMaterial || !categoriaId) {
+    resetMedidasSelectAnidado();
+    return;
+  }
+
+  const material = appConfig.materiales.find(m =>
+    parseInt(m.id_categoria) === categoriaId &&
+    String(m.nombre_material).trim() === nombreMaterial
+  );
+
+  const permitidas = Array.isArray(material?.medidas_permitidas)
+    ? material.medidas_permitidas.map(id => parseInt(id))
+    : [];
+
+  const medidasFiltradas = appConfig.medidas.filter(med => permitidas.includes(parseInt(med.id)));
+  fillSelect('ord-medida', medidasFiltradas, 'id', 'medida', 'Seleccione una medida...');
+  document.getElementById('ord-medida').value = '';
+}
+
+document.getElementById('ord-categoria').addEventListener('change', syncMaterialesPorCategoria);
+document.getElementById('ord-material').addEventListener('change', syncMedidasPorMaterial);
+
+async function loadOrdenes() {
+  const tbody    = document.getElementById('tabla-ordenes');
+  const iconRel  = document.getElementById('icon-reload');
+
+  const cardsEl = document.getElementById('cards-ordenes');
+  tbody.innerHTML = rowLoading();
+  cardsEl.innerHTML = `<div class="flex flex-col items-center gap-2 text-gray-400 py-12">
+    <svg class="animate-spin w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/>
+    </svg>
+    <span class="text-sm">Cargando…</span>
+  </div>`;
+  iconRel.classList.add('animate-spin');
+
+  try {
+    ordenesData = await api({ metodo: 'solicitar', perfil: normalizePerfil(currentUser?.perfil) });
+    renderOrdenes();
+  } catch (err) {
+    tbody.innerHTML = rowError(err.message);
+    cardsEl.innerHTML = `<div class="text-center py-12 text-red-400 text-sm">Error: ${esc(err.message)}</div>`;
+    toast(err.message, 'error');
+  } finally {
+    iconRel.classList.remove('animate-spin');
+  }
+}
+
+function renderOrdenes() {
+  // LOG DIAGNÓSTICO — eliminar cuando se confirmen los IDs correctos
+  console.table(ordenesData.map(o => ({
+    id: o.id, estado_nombre: o.estado, estado_id: o.estado_id
+  })));
+  const filtroId = document.getElementById('filtro-estado').value;
+  const data     = filtroId
+    ? ordenesData.filter(o => String(o.estado_id) === filtroId)
+    : ordenesData;
+
+  document.getElementById('ordenes-count').textContent =
+    `${data.length} orden${data.length !== 1 ? 'es' : ''}`;
+
+  const tbody   = document.getElementById('tabla-ordenes');
+  const cardsEl = document.getElementById('cards-ordenes');
+
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-12 text-gray-400 text-sm">
+      Sin órdenes para mostrar
+    </td></tr>`;
+    cardsEl.innerHTML = `<div class="text-center py-12 text-gray-400 text-sm">Sin órdenes para mostrar</div>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map(o => `
+    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
+      <td class="px-4 py-3 font-mono text-xs text-gray-400">#${o.id}</td>
+      <td class="px-4 py-3 text-xs text-gray-500">${fmtDate(o.forden)}</td>
+      <td class="px-4 py-3 text-xs">${fmtDate(o.fprogramada)}</td>
+      <td class="px-4 py-3">${esc(o.categoria ?? '—')}</td>
+      <td class="px-4 py-3 font-medium">${esc(o.material ?? '—')}</td>
+      <td class="px-4 py-3 text-right tabular-nums">${Number(o.cantidad).toLocaleString('es-CO')}</td>
+      <td class="px-4 py-3 text-gray-500">${esc(o.medida ?? '—')}</td>
+      <td class="px-4 py-3">
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${estadoBadge(o.estado)}">
+          ${esc(o.estado ?? '—')}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-center">${renderAccionesOrden(o)}</td>
+    </tr>
+  `).join('');
+
+  cardsEl.innerHTML = data.map(o => `
+    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow ring-1 ring-black/5 dark:ring-white/10 p-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="font-mono text-xs text-gray-400">#${o.id} · ${fmtDate(o.forden)}</span>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${estadoBadge(o.estado)}">
+          ${esc(o.estado ?? '—')}
+        </span>
+      </div>
+      <div>
+        <p class="font-medium">${esc(o.material ?? '—')}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">${esc(o.categoria ?? '—')}</p>
+      </div>
+      <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600 dark:text-gray-300">
+        <span class="font-medium">${Number(o.cantidad).toLocaleString('es-CO')} ${esc(o.medida ?? '')}</span>
+        <span class="text-gray-400">Prog: ${fmtDate(o.fprogramada)}</span>
+      </div>
+      <div class="border-t border-gray-100 dark:border-gray-800 pt-3 flex justify-end">
+        ${renderAccionesOrden(o)}
+      </div>
+    </div>
+  `).join('');
+}
+
+function getOrdenById(id) {
+  return ordenesData.find(o => Number(o.id) === Number(id)) ?? null;
+}
+
+function puedeCrearNotaEnOrden(o) {
+  const perfil = normalizePerfil(currentUser?.perfil);
+  const estadoId = Number(o?.estado_id);
+  if (!o) return false;
+  if (perfil === 'operador') return true;
+  return estadoId !== 9;
+}
+
+function puedeCancelarOrdenUi(o) {
+  return normalizePerfil(currentUser?.perfil) === 'operador';
+}
+
+function renderAccionesOrden(o) {
+  const perfil   = normalizePerfil(currentUser?.perfil);
+  const estadoId = Number(o.estado_id);
+  const parts    = [];
+  const esAprovechadorAsignado = Number(o.aprovechador) === Number(currentUser?.id);
+  const esTransportistaAsignado = Number(o.transportista) === Number(currentUser?.id);
+
+  if (perfil === 'operador' && estadoId === 1) {
+    const opts = appUsers
+      .filter(u => normalizePerfil(u.perfil) === 'aprovechador')
+      .map(u => `<option value="${u.id}">${esc(u.login)}</option>`).join('');
+    parts.push(`<div class="flex items-center gap-1">
+      <select
+        class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs min-w-[7rem]">
+        <option value="">Seleccione...</option>${opts}
+      </select>
+      <button onclick="asignarUsuario(${o.id}, 2, this)"
+        class="bg-blue-600 text-white px-2 py-1 rounded text-sm">
+        Asignar
+      </button>
+    </div>`);
+  }
+
+  if (perfil === 'operador' && estadoId === 3) {
+    const opts = appUsers
+      .filter(u => normalizePerfil(u.perfil) === 'transportista')
+      .map(u => `<option value="${u.id}">${esc(u.login)}</option>`).join('');
+    parts.push(`<div class="flex items-center gap-1">
+      <select
+        class="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs min-w-[7rem]">
+        <option value="">Seleccione...</option>${opts}
+      </select>
+      <button onclick="asignarUsuario(${o.id}, 4, this)"
+        class="bg-blue-600 text-white px-2 py-1 rounded text-sm">
+        Asignar
+      </button>
+    </div>`);
+  }
+
+  if (perfil === 'aprovechador' && estadoId === 2 && esAprovechadorAsignado) {
+    parts.push(actionBtn(o.id, 3, 'Aceptar orden', 'blue'));
+  }
+
+  if (perfil === 'aprovechador' && estadoId === 8 && esAprovechadorAsignado) {
+    parts.push(actionBtn(o.id, 9, 'Recibir orden', 'green'));
+  }
+
+  if (perfil === 'transportista' && estadoId === 4 && esTransportistaAsignado) {
+    parts.push(actionBtn(o.id, 5, 'Aceptar orden', 'violet'));
+  }
+
+  if (perfil === 'transportista' && estadoId === 5 && esTransportistaAsignado) {
+    parts.push(actionBtn(o.id, 6, 'Salir a recoger', 'violet'));
+  }
+
+  if (perfil === 'transportista' && estadoId === 6 && esTransportistaAsignado) {
+    parts.push(renderBotonesTransportista(o.id, 7, 'Recoger material'));
+  }
+
+  if (perfil === 'transportista' && estadoId === 7 && esTransportistaAsignado) {
+    parts.push(renderBotonesTransportista(o.id, 8, 'Entregar al aprovechador'));
+  }
+
+  parts.push(notasBtn(o.id));
+
+  if (puedeCancelarOrdenUi(o)) {
+    parts.push(`<button onclick="cancelarOrden(${o.id})"
+      class="text-xs px-2 py-1 rounded-lg border border-red-300 dark:border-red-500
+             text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+      Cancelar
+    </button>`);
+  }
+
+  return `<div class="flex flex-wrap gap-1.5 justify-end items-center">${parts.join('')}</div>`;
+
+}
+
+// Botón genérico de acción con color variable
+function actionBtn(id, estado, label, color = 'violet') {
+  const cls = {
+    violet: 'bg-violet-600 text-white hover:bg-violet-700',
+    blue:   'bg-blue-600   text-white hover:bg-blue-700',
+    green:  'bg-green-600  text-white hover:bg-green-700',
+    amber:  'bg-amber-600  text-white hover:bg-amber-700',
+  }[color] ?? 'bg-violet-600 text-white hover:bg-violet-700';
+  return `<button onclick="cambiarEstadoOrden(${id}, ${estado})"
+    class="text-xs px-2.5 py-1 rounded-lg ${cls} transition-colors whitespace-nowrap">
+    ${label}
+  </button>`;
+}
+
+// Alias para compatibilidad con código existente
+function actionButton(id, estado, label) { return actionBtn(id, estado, label); }
+
+// Botón de notas (icono de bocadillo)
+function notasBtn(id) {
+  return `<button onclick="abrirNotas(${id})" title="Ver notas"
+    class="text-xs px-2 py-1 rounded-lg border border-gray-300 dark:border-gray-600
+           hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-1">
+    <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"/>
+    </svg>
+    Notas
+  </button>`;
+}
+
+// Botones GPS + acción para estados que requieren foto de evidencia
+function renderBotonesTransportista(id, nuevoEstado, label) {
+  const activo  = gpsOrdenActiva === id;
+  const gpsCls  = activo
+    ? 'bg-green-600 text-white border-green-600'
+    : 'border border-green-500 text-green-700 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20';
+  const gpsLabel = activo ? 'Detener GPS' : 'GPS';
+  return `<div class="flex items-center gap-2 flex-wrap justify-end">
+    <button id="btn-gps-${id}" onclick="iniciarGPS(${id})"
+      class="text-xs px-2.5 py-1 rounded-lg ${gpsCls} transition-colors flex items-center gap-1">
+      <svg class="w-3 h-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
+      </svg>
+      ${gpsLabel}
+    </button>
+    <button onclick="abrirEvidencia(${id}, ${nuevoEstado})"
+      class="text-xs px-2.5 py-1 rounded-lg bg-violet-600 text-white hover:bg-violet-700 transition-colors">
+      ${label}
+    </button>
+  </div>`;
+}
+
+function estadoBadge(estado) {
+  const map = {
+    'en espera':               'bg-gray-100    text-gray-600    dark:bg-gray-700        dark:text-gray-300',
+    'asignado aprovechador':   'bg-blue-100    text-blue-700    dark:bg-blue-900/50     dark:text-blue-300',
+    'aceptado aprovechador':   'bg-sky-100     text-sky-700     dark:bg-sky-900/50      dark:text-sky-300',
+    'asignado transportista':  'bg-violet-100  text-violet-700  dark:bg-violet-900/50   dark:text-violet-300',
+    'aceptado transportista':  'bg-purple-100  text-purple-700  dark:bg-purple-900/50   dark:text-purple-300',
+    'en camino al cliente':    'bg-amber-100   text-amber-700   dark:bg-amber-900/50    dark:text-amber-300',
+    'recogido en cliente':     'bg-orange-100  text-orange-700  dark:bg-orange-900/50   dark:text-orange-300',
+    'entregado aprovechador':  'bg-green-100   text-green-700   dark:bg-green-900/50    dark:text-green-300',
+    'recibido aprovechador':   'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50  dark:text-emerald-300',
+    'cancelado':               'bg-red-100     text-red-700     dark:bg-red-900/50      dark:text-red-300',
+  };
+  return map[String(estado ?? '').toLowerCase()] ?? 'bg-gray-100 text-gray-600';
+}
+
+function rowLoading() {
+  return `<tr><td colspan="9" class="text-center py-12">
+    <div class="flex flex-col items-center gap-2 text-gray-400">
+      <svg class="animate-spin w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"/>
+      </svg>
+      <span class="text-sm">Cargando…</span>
+    </div>
+  </td></tr>`;
+}
+
+function rowError(msg) {
+  return `<tr><td colspan="9" class="text-center py-12 text-red-400 text-sm">
+    Error: ${esc(msg)}
+  </td></tr>`;
+}
+
+document.getElementById('filtro-estado').addEventListener('change', renderOrdenes);
+document.getElementById('btn-reload').addEventListener('click', loadOrdenes);
+
+async function cambiarEstadoOrden(id, estado, extra = {}) {
+  try {
+    await api({ metodo: 'cambiarestado', orden: id, estado, ...extra });
+    toast(`Estado de la orden #${id} actualizado`, 'success');
+    await loadOrdenes();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function asignarUsuario(ordenId, nuevoEstado, btnElement) {
+  const selectElement = btnElement.parentElement.querySelector('select');
+  const idAsignado = selectElement ? selectElement.value : '';
+
+  if (!idAsignado || idAsignado === '') {
+    toast('Selecciona un usuario válido de la lista', 'error');
+    return;
+  }
+
+  try {
+    const payload = {
+      metodo: 'cambiarestado',
+      orden: ordenId,
+      estado: nuevoEstado,
+      id_asignado: parseInt(idAsignado, 10)
+    };
+    console.log('Payload enviado:', payload);
+    await api(payload);
+    toast(`Orden #${ordenId} actualizada`, 'success');
+    await loadOrdenes();
+  } catch (e) {
+    console.error(e);
+    toast(e.message || 'No se pudo asignar el usuario', 'error');
+  }
+}
+
+async function cancelarOrden(id) {
+  if (!confirm(`¿Cancelar la orden #${id}? Esta acción no se puede deshacer.`)) return;
+  try {
+    await api({ metodo: 'cancelar', orden: id });
+    toast(`Orden #${id} cancelada`, 'info');
+    await loadOrdenes();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+// ─── MODAL NUEVA ORDEN ────────────────────────────────────────────────────────
+function abrirModal() {
+  if (normalizePerfil(currentUser?.perfil) !== 'cliente') {
+    toast('Solo el perfil cliente puede crear solicitudes.', 'error');
+    return;
+  }
+
+  document.getElementById('orden-error').classList.add('hidden');
+  document.getElementById('form-orden').reset();
+
+  // Resetear material
+  document.getElementById('ord-material').innerHTML = '<option value="">— Elige categoría primero —</option>';
+  document.getElementById('ord-material').disabled = true;
+  resetMedidasSelectAnidado();
+
+  document.getElementById('modal-orden').classList.remove('hidden');
+  document.getElementById('ord-fecha').focus();
+}
+
+function cerrarModal() {
+  document.getElementById('modal-orden').classList.add('hidden');
+}
+
+document.getElementById('btn-nueva-orden').addEventListener('click', abrirModal);
+document.getElementById('btn-cancelar-orden').addEventListener('click', cerrarModal);
+document.getElementById('btn-cerrar-modal').addEventListener('click', cerrarModal);
+document.getElementById('modal-overlay').addEventListener('click', cerrarModal);
+
+// Cerrar modales con Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { cerrarModal(); cerrarEvidencia(); cerrarNotas(); }
+});
+
+document.getElementById('form-orden').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const errEl   = document.getElementById('orden-error');
+  const errText = document.getElementById('orden-error-text');
+  const spinner = document.getElementById('spinner-orden');
+  const btnSub  = document.getElementById('btn-submit-orden');
+
+  errEl.classList.add('hidden');
+
+  const payload = {
+    metodo:      'crear',
+    fprogramada: document.getElementById('ord-fecha').value,
+    categoria:   document.getElementById('ord-categoria').value,
+    material:    document.getElementById('ord-material').value,
+    cantidad:    document.getElementById('ord-cantidad').value,
+    medida:      document.getElementById('ord-medida').value,
+  };
+
+  // Validación client-side
+  const vacio = Object.entries(payload)
+    .filter(([k]) => k !== 'metodo')
+    .find(([, v]) => !v || v === '');
+
+  if (vacio) {
+    errText.textContent = `El campo "${vacio[0]}" es obligatorio.`;
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  spinner.classList.remove('hidden');
+  btnSub.disabled = true;
+
+  try {
+    await api(payload);
+    cerrarModal();
+    toast('Solicitud creada exitosamente', 'success');
+    await loadOrdenes();
+  } catch (err) {
+    errText.textContent = err.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    spinner.classList.add('hidden');
+    btnSub.disabled = false;
+  }
+});
+
+// ─── DETALLE DE ORDEN (redirige al módulo de notas) ──────────────────────────
+async function abrirDetalle(id) { abrirNotas(id); }
+
+// ─── UTILIDADES ──────────────────────────────────────────────────────────────
+function fmtDate(str) {
+  if (!str) return '—';
+  const d = new Date(str);
+  return isNaN(d) ? str : d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = String(str ?? '');
+  return d.innerHTML;
+}
+
+// ─── MÓDULO DE NOTAS ─────────────────────────────────────────────────────────
+
+let notasOrdenActiva = null;
+
+function syncNotasComposer() {
+  const orden = getOrdenById(notasOrdenActiva);
+  const puedeCrear = puedeCrearNotaEnOrden(orden);
+  const textarea = document.getElementById('nota-texto');
+  const btn = document.getElementById('btn-nota-enviar');
+  const btnText = document.getElementById('btn-nota-text');
+
+  textarea.disabled = !puedeCrear;
+  btn.disabled = !puedeCrear;
+  textarea.placeholder = puedeCrear
+    ? 'Escribe una nota...'
+    : 'No puedes agregar notas en el estado actual';
+  btnText.textContent = puedeCrear ? 'Agregar nota' : 'Solo lectura';
+}
+
+async function abrirNotas(ordenId) {
+  notasOrdenActiva = ordenId;
+  document.getElementById('notas-orden-id').textContent = `Orden #${ordenId}`;
+  document.getElementById('nota-texto').value = '';
+  syncNotasComposer();
+  document.getElementById('modal-notas').classList.remove('hidden');
+  await cargarNotas();
+}
+
+function cerrarNotas() {
+  document.getElementById('modal-notas').classList.add('hidden');
+  notasOrdenActiva = null;
+}
+
+async function cargarNotas() {
+  const lista = document.getElementById('notas-lista');
+  lista.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">Cargando…</p>';
+  try {
+    const notas = await api({ metodo: 'solicitarnotas', orden: notasOrdenActiva });
+    if (!notas.length) {
+      lista.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No hay notas aún.</p>';
+      return;
+    }
+    lista.innerHTML = notas.map(n => `
+      <div class="bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 space-y-1">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs font-semibold text-gray-600 dark:text-gray-300 truncate">
+            ${esc(n.login)} <span class="font-normal opacity-60">· ${esc(n.perfil)}</span>
+          </span>
+          <span class="text-xs text-gray-400 shrink-0">${fmtDate(n.fnota)}</span>
+        </div>
+        <p class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">${esc(n.nota)}</p>
+      </div>`).join('');
+  } catch (e) {
+    lista.innerHTML = `<p class="text-sm text-red-400 text-center py-6">Error: ${esc(e.message)}</p>`;
+  }
+}
+
+document.getElementById('btn-notas-cerrar').addEventListener('click',  cerrarNotas);
+document.getElementById('notas-overlay').addEventListener('click',      cerrarNotas);
+
+document.getElementById('btn-nota-enviar').addEventListener('click', async () => {
+  const orden = getOrdenById(notasOrdenActiva);
+  if (!puedeCrearNotaEnOrden(orden)) {
+    toast('No puedes agregar notas en el estado actual', 'error');
+    return;
+  }
+
+  const texto = document.getElementById('nota-texto').value.trim();
+  if (!texto) { toast('Escribe una nota antes de enviar', 'error'); return; }
+
+  const btn     = document.getElementById('btn-nota-enviar');
+  const btnText = document.getElementById('btn-nota-text');
+  const spinner = document.getElementById('spinner-nota');
+
+  spinner.classList.remove('hidden');
+  btnText.textContent = 'Enviando…';
+  btn.disabled = true;
+
+  try {
+    await api({ metodo: 'crearnota', nota: texto, orden: notasOrdenActiva });
+    document.getElementById('nota-texto').value = '';
+    toast('Nota agregada', 'success');
+    await cargarNotas();
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    spinner.classList.add('hidden');
+    btn.disabled = false;
+    syncNotasComposer();
+  }
+});
+
+// ─── GPS TRACKING ─────────────────────────────────────────────────────────────
+
+function iniciarGPS(ordenId) {
+  if (!navigator.geolocation) {
+    toast('Tu navegador no soporta geolocalización', 'error');
+    return;
+  }
+
+  if (!usuarioActualEsTransportista()) {
+    detenerGPS(false);
+    toast('Solo el transportista puede activar el GPS.', 'error');
+    return;
+  }
+
+  // Toggle: si ya está activo para esta orden, detener
+  if (gpsOrdenActiva === ordenId) {
+    detenerGPS();
+    return;
+  }
+
+  // Detener cualquier rastreo previo antes de iniciar uno nuevo
+  if (gpsOrdenActiva !== null) detenerGPS();
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      gpsOrdenActiva = ordenId;
+      renderOrdenes(); // re-renderiza para mostrar botón GPS activo
+
+      await enviarUbicacion(ordenId, pos.coords.latitude, pos.coords.longitude);
+      toast('GPS activo — ubicación enviada', 'success');
+
+      // Enviar posición automáticamente cada GPS_INTERVALO_MS
+      gpsIntervalId = setInterval(() => {
+        if (!usuarioActualEsTransportista()) {
+          detenerGPS(false);
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          async (p) => enviarUbicacion(ordenId, p.coords.latitude, p.coords.longitude),
+          (e)  => console.warn('[GPS intervalo]', e.message),
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      }, GPS_INTERVALO_MS);
+    },
+    (geoErr) => {
+      const msgs = {
+        1: 'Permiso de ubicación denegado. Ve a Configuración del navegador → Privacidad → Ubicación y permite el acceso a redciclo.top.',
+        2: 'No se pudo determinar tu posición. Verifica que el GPS del dispositivo esté activo.',
+        3: 'Tiempo de espera agotado al obtener la ubicación. Intenta en un lugar con mejor señal.',
+      };
+      const msg = msgs[geoErr.code] ?? `Error de geolocalización (código ${geoErr.code})`;
+      console.error('[GPS] Error Geolocation API:', geoErr.code, geoErr.message);
+      alert(msg);          // alert para que no se pierda aunque el toast desaparezca
+      toast(msg, 'error');
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+}
+
+function detenerGPS(mostrarToast = true) {
+  if (gpsIntervalId !== null) {
+    clearInterval(gpsIntervalId);
+    gpsIntervalId = null;
+  }
+  const ordenAnterior = gpsOrdenActiva;
+  gpsOrdenActiva = null;
+  if (ordenAnterior !== null) {
+    renderOrdenes(); // re-renderiza para mostrar botón GPS inactivo
+    if (mostrarToast) {
+      toast('Seguimiento GPS detenido', 'info');
+    }
+  }
+}
+
+async function enviarUbicacion(ordenId, lat, lng) {
+  if (!usuarioActualEsTransportista()) {
+    detenerGPS(false);
+    return;
+  }
+
+  const payload = { metodo: 'guardarTracking', orden: ordenId, lat, lng };
+  console.log('[GPS] Coordenadas obtenidas:', { lat, lng });
+  console.log('[GPS] Payload enviado:', payload);
+  try {
+    await api(payload);
+    console.log('[GPS] Ubicación registrada OK');
+  } catch (e) {
+    if (String(e.message || '').includes('Solo el transportista puede enviar ubicacion')) {
+      detenerGPS(false);
+    }
+    console.error('[GPS] Error al registrar ubicación:', e.message);
+    toast('Error GPS: ' + e.message, 'error');
+  }
+}
+
+// ─── EVIDENCIAS (FOTOS) ───────────────────────────────────────────────────────
+
+function abrirEvidencia(ordenId, estado) {
+  evidenciaPendiente = { ordenId, estado };
+  document.getElementById('evidencia-input').value = '';
+  document.getElementById('evidencia-preview-wrap').classList.add('hidden');
+  document.getElementById('evidencia-error').classList.add('hidden');
+  document.getElementById('modal-evidencia').classList.remove('hidden');
+}
+
+function cerrarEvidencia() {
+  if (document.getElementById('modal-evidencia').classList.contains('hidden')) return;
+  document.getElementById('modal-evidencia').classList.add('hidden');
+  evidenciaPendiente = null;
+}
+
+// Vista previa al seleccionar imagen
+document.getElementById('evidencia-input').addEventListener('change', function () {
+  const file = this.files[0];
+  const wrap = document.getElementById('evidencia-preview-wrap');
+  const img  = document.getElementById('evidencia-preview');
+  if (!file) { wrap.classList.add('hidden'); return; }
+  if (img.src) URL.revokeObjectURL(img.src); // liberar URL anterior
+  img.src = URL.createObjectURL(file);
+  wrap.classList.remove('hidden');
+});
+
+document.getElementById('btn-evidencia-cerrar').addEventListener('click',   cerrarEvidencia);
+document.getElementById('btn-evidencia-cancelar').addEventListener('click',  cerrarEvidencia);
+document.getElementById('evidencia-overlay').addEventListener('click',       cerrarEvidencia);
+
+document.getElementById('btn-evidencia-subir').addEventListener('click', async () => {
+  if (!evidenciaPendiente) return;
+
+  const { ordenId, estado } = evidenciaPendiente;
+  const fileInput = document.getElementById('evidencia-input');
+  const file      = fileInput.files[0];
+  const errEl     = document.getElementById('evidencia-error');
+  errEl.classList.add('hidden');
+
+  if (!file) {
+    errEl.textContent = 'Debes seleccionar o tomar una foto antes de continuar.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  const spinner = document.getElementById('spinner-evidencia');
+  const btnText = document.getElementById('btn-evidencia-text');
+  const btn     = document.getElementById('btn-evidencia-subir');
+
+  spinner.classList.remove('hidden');
+  btnText.textContent = 'Subiendo…';
+  btn.disabled = true;
+
+  try {
+    const fd = new FormData();
+    fd.append('metodo', 'subirEvidencia');
+    fd.append('orden',  String(ordenId));
+    fd.append('estado', String(estado));
+    fd.append('foto',   file);
+
+    const res = await fetch(API_URL, { method: 'POST', body: fd, credentials: 'include' });
+    let json = null;
+    try { json = await res.json(); } catch (_) {}
+
+    if (!res.ok || json?.status !== 'success') {
+      throw new Error(json?.message || `Error HTTP ${res.status}`);
+    }
+
+    cerrarEvidencia();
+    toast('Evidencia subida correctamente', 'success');
+    await loadOrdenes();
+
+  } catch (e) {
+    errEl.textContent = e.message;
+    errEl.classList.remove('hidden');
+  } finally {
+    spinner.classList.add('hidden');
+    btnText.textContent = 'Confirmar y Subir';
+    btn.disabled = false;
+  }
+});
+
+// ─── PWA: REGISTRO DEL SERVICE WORKER ────────────────────────────────────────
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => {
+        console.log('[SW] Registrado. Scope:', reg.scope);
+
+        // Detectar si hay una versión nueva disponible y notificar al usuario
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker?.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              toast('Hay una nueva versión disponible. Recarga para actualizar.', 'info');
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('[SW] No se pudo registrar:', err));
+  });
+}
+
+// ─── PWA: BOTÓN DE INSTALACIÓN ───────────────────────────────────────────────
+
+let deferredInstallPrompt = null;
+
+// El navegador dispara este evento cuando la app cumple los criterios de instalación.
+// Lo guardamos para poder lanzarlo cuando el usuario pulse el botón.
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault(); // evitar el mini-banner automático del browser
+  deferredInstallPrompt = event;
+  // Mostrar nuestro botón personalizado
+  document.getElementById('pwa-install-wrap').classList.remove('hidden');
+});
+
+document.getElementById('btn-pwa-install').addEventListener('click', async () => {
+  if (!deferredInstallPrompt) return;
+
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+
+  if (outcome === 'accepted') {
+    toast('¡App instalada! Búscala en tu pantalla de inicio.', 'success');
+    document.getElementById('pwa-install-wrap').classList.add('hidden');
+  }
+  // Limpiar el prompt (solo puede usarse una vez)
+  deferredInstallPrompt = null;
+});
+
+// Ocultar el botón si el usuario ya instaló la app
+window.addEventListener('appinstalled', () => {
+  document.getElementById('pwa-install-wrap').classList.add('hidden');
+  deferredInstallPrompt = null;
+  console.log('[PWA] App instalada correctamente.');
+});
+
+// ─── MANEJADOR GLOBAL DE ERRORES ─────────────────────────────────────────────
+// Captura promesas rechazadas sin catch (Bug de F12: errores silenciosos)
+window.addEventListener('unhandledrejection', (event) => {
+  const msg = event.reason?.message ?? String(event.reason ?? 'Error desconocido');
+  console.error('[Redciclo] Unhandled rejection:', msg);
+  toast(`Error inesperado: ${msg}`, 'error');
+  event.preventDefault(); // evita que el navegador muestre el error en rojo
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+showLogin();
+</script>
+</body>
+</html>
