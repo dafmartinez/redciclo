@@ -923,10 +923,6 @@ async function loadOrdenes() {
 }
 
 function renderOrdenes() {
-  // LOG DIAGNÓSTICO — eliminar cuando se confirmen los IDs correctos
-  console.table(ordenesData.map(o => ({
-    id: o.id, estado_nombre: o.estado, estado_id: o.estado_id
-  })));
   const filtroId = document.getElementById('filtro-estado').value;
   const data     = filtroId
     ? ordenesData.filter(o => String(o.estado_id) === filtroId)
