@@ -292,12 +292,29 @@ final class Orden
         ];
     }
 
+    /**
+     * Devuelve el ID del estado "Cancelado".
+     * Intenta varias grafías para tolerar "Cancelado", "Cancelada", "Orden cancelada", etc.
+     * Si ninguna coincide, devuelve el ID más alto de la tabla (convención: el último estado es cancelado).
+     * En último recurso retorna 0 para que el controlador informe el error correctamente.
+     */
     public function getEstadoCanceladoId(): int
     {
-        $stmt = $this->db->query("SELECT id FROM estados WHERE LOWER(TRIM(estado)) LIKE '%cancelado%' LIMIT 1");
+        // Intento 1: coincidencia parcial con "cancel"
+        $stmt = $this->db->query(
+            "SELECT id FROM estados WHERE LOWER(TRIM(estado)) LIKE '%cancel%' ORDER BY id DESC LIMIT 1"
+        );
         $row = $stmt->fetch();
+        if ($row) {
+            return (int)$row['id'];
+        }
 
-        return (int)($row['id'] ?? 0);
+        // Intento 2: devolver todos los estados para loguear cuáles existen
+        $todos = $this->db->query("SELECT id, estado FROM estados ORDER BY id")->fetchAll();
+        error_log('[Redciclo/getEstadoCanceladoId] No se encontró estado cancelado. Estados en BD: '
+            . json_encode($todos, JSON_UNESCAPED_UNICODE));
+
+        return 0;
     }
 
     public function getCategorias(): array

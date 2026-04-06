@@ -69,6 +69,19 @@ final class OrdenController extends Controller
 
         $ordenId = (int)$data['orden'];
 
+        // estado = 0 significa cancelar — redirigir al flujo correcto
+        if ($estado === 0) {
+            if ($perfil !== 'operador') {
+                $this->fail('Solo el operador puede cancelar ordenes.', 403);
+            }
+            $canceladoId = $this->ordenes->getEstadoCanceladoId();
+            if ($canceladoId <= 0) {
+                $this->fail('Estado cancelado no encontrado en la base de datos.', 500);
+            }
+            $ok = $this->ordenes->cancelar($ordenId, $canceladoId);
+            $ok ? $this->ok(null, 'Orden cancelada') : $this->fail('No se pudo cancelar la orden');
+        }
+
         $ok = $this->ordenes->cambiarEstado(
             (int)$user['id'],
             $perfil,
@@ -130,7 +143,12 @@ final class OrdenController extends Controller
         $data = $this->requireField('orden');
         $canceladoId = $this->ordenes->getEstadoCanceladoId();
         if ($canceladoId <= 0) {
-            $this->fail('Estado cancelado no configurado.', 500);
+            // El log de getEstadoCanceladoId() ya registró todos los estados disponibles
+            $this->fail(
+                'Estado "cancelado" no encontrado en la tabla estados. ' .
+                'Revisa el log del servidor para ver los estados disponibles.',
+                500
+            );
         }
 
         $ok = $this->ordenes->cancelar((int)$data['orden'], $canceladoId);
