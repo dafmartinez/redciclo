@@ -1739,7 +1739,8 @@ async function abrirModalTracking(ordenId) {
   let puntos;
   try {
     const res = await api({ metodo: 'obtenerRuta', orden: ordenId });
-    puntos = res.data ?? [];
+    console.log('Respuesta del servidor tracking:', res);
+    puntos = Array.isArray(res) ? res : [];
   } catch (err) {
     cerrarModalTracking();
     toast('No se pudo cargar la ruta: ' + (err.message ?? err), 'error');

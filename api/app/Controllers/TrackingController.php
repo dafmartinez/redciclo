@@ -57,8 +57,12 @@ final class TrackingController extends Controller
             $this->fail('ID de orden no valido.');
         }
 
-        $model = new Tracking(Database::getConnection());
+        error_log('[Redciclo/obtenerRuta] Buscando tracking para orden: ' . $ordenId);
+
+        $model  = new Tracking(Database::getConnection());
         $puntos = $model->obtenerRutaPorOrden($ordenId);
+
+        error_log('[Redciclo/obtenerRuta] Puntos encontrados: ' . count($puntos));
 
         $this->ok($puntos);
     }
