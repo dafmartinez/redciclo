@@ -42,7 +42,9 @@ final class Orden
                 e.id AS estado_id,
                 o.cliente AS cliente,
                 o.transportista AS transportista,
-                o.aprovechador AS aprovechador
+                o.aprovechador AS aprovechador,
+                o.foto_recoleccion,
+                o.foto_entrega
              FROM ordenes o
              LEFT JOIN categorias c ON c.id = o.categoria
              LEFT JOIN materiales m ON m.id = o.material
