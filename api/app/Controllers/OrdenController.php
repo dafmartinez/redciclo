@@ -207,21 +207,35 @@ final class OrdenController extends Controller
             $this->fail('La imagen no puede superar 5 MB.');
         }
 
-        // Directorio de destino: public/uploads/evidencias/ (accesible por URL)
-        $uploadDir = dirname(__DIR__, 3) . '/public/uploads/evidencias/';
-        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true)) {
-            error_log('[Redciclo/subirEvidencia] No se pudo crear el directorio: ' . $uploadDir);
-            $this->fail('Error interno al preparar el almacenamiento.', 500);
+        // Directorio de destino: {raiz}/uploads/evidencias/ (accesible desde la URL raíz del sitio)
+        // __DIR__ = .../public_html/api/app/Controllers  → dirname x3 = .../public_html
+        $uploadDir = dirname(__DIR__, 3) . '/uploads/evidencias/';
+        error_log('[Redciclo/subirEvidencia] uploadDir resuelto: ' . $uploadDir);
+
+        if (!is_dir($uploadDir)) {
+            if (!mkdir($uploadDir, 0775, true)) {
+                error_log('[Redciclo/subirEvidencia] mkdir FALLÓ para: ' . $uploadDir);
+                $this->fail('Error interno al preparar el almacenamiento (mkdir).', 500);
+            }
         }
 
-        // Nombre único e impredecible: no expone IDs en filesystem
+        if (!is_writable($uploadDir)) {
+            error_log('[Redciclo/subirEvidencia] El directorio NO tiene permisos de escritura: ' . $uploadDir);
+            $this->fail('El servidor no tiene permisos para guardar archivos en el directorio de evidencias.', 500);
+        }
+
+        // Nombre único: {ordenId}_{estado}_{8bytesAleatorios}.{ext}
         $filename = sprintf('%d_%d_%s.%s', $ordenId, $estado, bin2hex(random_bytes(8)), $extMap[$mime]);
         $destino  = $uploadDir . $filename;
+        error_log('[Redciclo/subirEvidencia] Intentando guardar en: ' . $destino);
 
         if (!move_uploaded_file($tmpPath, $destino)) {
-            $this->fail('No se pudo guardar la imagen en el servidor.', 500);
+            $lastErr = error_get_last();
+            error_log('[Redciclo/subirEvidencia] move_uploaded_file FALLÓ. Último error PHP: ' . json_encode($lastErr));
+            $this->fail('No se pudo mover el archivo subido. Verifica permisos del directorio.', 500);
         }
 
+        error_log('[Redciclo/subirEvidencia] Archivo guardado correctamente: ' . $filename);
         $rutaRelativa = 'uploads/evidencias/' . $filename;
 
         $ok = $this->ordenes->subirEvidencia(

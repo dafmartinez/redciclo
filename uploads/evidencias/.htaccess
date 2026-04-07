@@ -1,0 +1,9 @@
+# Bloquear ejecución de PHP en esta carpeta (seguridad)
+<FilesMatch "\.php$">
+    Require all denied
+</FilesMatch>
+
+# Solo permitir imágenes
+<FilesMatch "\.(jpg|jpeg|png|webp|gif)$">
+    Require all granted
+</FilesMatch>
